@@ -1,0 +1,18 @@
+/* This module defines the server interface for the Musical Taste Profile Service. */
+module NFS
+{
+
+  	interface Proxy
+  	{
+
+
+    string pwd();
+    string ls();
+    string history();
+    string mkdir(in string dirName);
+    string mkFile(in string fileName);
+    string cd(in string directory);
+    string ps();
+		
+  	};
+};
