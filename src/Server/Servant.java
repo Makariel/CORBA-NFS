@@ -5,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import DataStructure.HistoryBook;
 import NFS.*;
 
 /** This class contains the methods that the client can call. 
@@ -16,44 +17,53 @@ import NFS.*;
  *
  */
 public class Servant extends ProxyPOA {
+	
+	HistoryBook hb;
 
 	public Servant() {
-		
+		hb = new HistoryBook();
 	}
 
 	@Override
 	public String pwd() {
+		System.out.println("Command pwd has been invoked.");
 		return executeCommand("pwd");
 	}
 
 	@Override
 	public String cd(String directory) {
+		System.out.println("Command cd has been invoked.");
 		return executeCommand("cd" + " " + directory);
 	}
 	
 	@Override
 	public String ls() {
+		System.out.println("Command ls has been invoked.");
 		return executeCommand("ls");
 	}
 	
 	@Override
 	public String ps() {
+		System.out.println("Command ps has been invoked.");
 		return executeCommand("ps");
 	}
 
 	@Override
 	public String history() {
-		return null;
+		System.out.println("Command history has been invoked.\n");
+		return hb.displayHistory();
 	}
 
 	@Override
 	public String mkdir(String dirName) {
+		System.out.println("Command mkdir has been invoked.");
 		String cmd = "mkdir " + dirName;
 		return executeCommand(cmd);
 	}
 
 	@Override
 	public String mkFile(String fileName) {
+		System.out.println("Command mkFile has been invoked.");
 		return executeCommand("m");
 	}
 	
@@ -64,6 +74,10 @@ public class Servant extends ProxyPOA {
 		String results = null;
 		
 		try {
+			
+		hb.addToHistory(cmd);
+		
+		
 		
 		Process p = Runtime.getRuntime().exec(cmd);
         
@@ -77,7 +91,7 @@ public class Servant extends ProxyPOA {
    
         while ((s = stdInput.readLine()) != null) {
         	
-            System.out.println(s);
+           // System.out.println(s);
             
             if(runs > 0) {
             	results = results + "\n" + s;
