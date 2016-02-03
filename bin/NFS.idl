@@ -8,6 +8,7 @@ module NFS
 
     string pwd();
     string ls();
+    string lsd();
     string history();
     string mkdir(in string dirName);
     string mkFile(in string fileName);

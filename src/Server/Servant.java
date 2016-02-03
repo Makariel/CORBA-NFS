@@ -8,10 +8,7 @@ import java.io.InputStreamReader;
 import DataStructure.HistoryBook;
 import NFS.*;
 
-/** This class contains the methods that the client can call. 
- *  Before the server computes and returns the results of the
- *  client call the server will produce a 60 ms delay to 
- *  simulate network latency.
+/** This class contains the methods that the client can call on the server side. 
  * 
  * @author hichaels
  *
@@ -43,6 +40,12 @@ public class Servant extends ProxyPOA {
 	}
 	
 	@Override
+	public String lsd() {
+		System.out.println("Command ls -d has been invoked.");
+		return executeCommand("ls -l");
+	}
+	
+	@Override
 	public String ps() {
 		System.out.println("Command ps has been invoked.");
 		return executeCommand("ps");
@@ -67,6 +70,12 @@ public class Servant extends ProxyPOA {
 		return executeCommand("m");
 	}
 	
+	/** This generic method will run any legal command as specified @param cmd.
+	 *  The results of the execution of the commands will be returned as a concatinated String.
+	 * 
+	 * @param cmd The specified command
+	 * @return String containing the results
+	 */
 	public String executeCommand(String cmd) {
 		
 		int runs = 0;
@@ -74,10 +83,10 @@ public class Servant extends ProxyPOA {
 		String results = null;
 		
 		try {
+		
+	    // Add the command to the History
 			
 		hb.addToHistory(cmd);
-		
-		
 		
 		Process p = Runtime.getRuntime().exec(cmd);
         
@@ -90,9 +99,16 @@ public class Servant extends ProxyPOA {
         // Read the output from the command
    
         while ((s = stdInput.readLine()) != null) {
-        	
-           // System.out.println(s);
             
+        	/* If the loop has only been run once, there is no need for
+        	 * concatination, as it is a indication of there being only
+        	 * one line of output. If loop has been run > one iterations
+        	 * there is a need for concatination. I am using simple String
+        	 * concatination over returning a String arrray, or compressing
+        	 * it to bytes (chars), because it is more feasible for 
+        	 * network transfer.
+        	*/
+        	
             if(runs > 0) {
             	results = results + "\n" + s;
             } else {
@@ -108,6 +124,8 @@ public class Servant extends ProxyPOA {
         }
 		}
         
+		// Handle errors
+		
         catch (IOException e) {
             System.out.println("[An error has occurred]");
             System.out.println("------------------------");
@@ -115,6 +133,8 @@ public class Servant extends ProxyPOA {
             System.out.println("------------------------");
             System.exit(-1);
         }
+		
+		// Return the concatinated String
 		
 		return results;
 	}

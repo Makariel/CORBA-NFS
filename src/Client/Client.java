@@ -6,6 +6,11 @@ import org.omg.CORBA.ORB;
 import org.omg.CosNaming.NamingContextExt;
 import org.omg.CosNaming.NamingContextExtHelper;
 
+/**
+ * 
+ * @author hichaels
+ *
+ */
 public class Client {
 
 	private static Proxy proxy;
@@ -17,14 +22,22 @@ public class Client {
 	
 		try {
 
+			// Initialize the ORB broker
+			
 			ORB orb = ORB.init(args, null);
 
+			// Bind the references so that the system recognizes the interfaces as specified
+			
 			org.omg.CORBA.Object objRef = orb.resolve_initial_references("NameService");
-	
 			NamingContextExt ncRef = NamingContextExtHelper.narrow(objRef);
 
 			String name = "Proxy";
+			
+			// Bind the helper to the Proxy interface
+			
 			proxy = ProxyHelper.narrow(ncRef.resolve_str(name));
+			
+			// Launch the shell
 			
 			new Shell(proxy);
 

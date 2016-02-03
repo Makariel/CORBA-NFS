@@ -1,5 +1,10 @@
 package DataStructure;
 
+/**  This class will be used in conjunction with Backup class.
+ * 
+ *  * @author hichaels
+ *
+ */
 public class File {
 
 	String fileName;

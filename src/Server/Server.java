@@ -9,40 +9,48 @@ import org.omg.CosNaming.NamingContextExtHelper;
 import org.omg.PortableServer.POA;
 import org.omg.PortableServer.POAHelper;
 
+/**
+ * 
+ * @author hichaels
+ *
+ */
 public class Server {
 
 	public static void main(String[] args) {
 
 		try {
 
-			// create and initialize the ORB
+			// Create and initialize the ORB
+			
 			ORB orb = ORB.init(args, null);
 
-			// get reference to rootpoa & activate the POAManager
+			// Activate POAManager
+			
 			POA rootpoa = POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
 			rootpoa.the_POAManager().activate();
 
-			// dataStructure.displayFiles();
-
-			// create servant and register it with the ORB
+			// Create servant
+			
 			Servant serv = new Servant();
 
-			// get object reference from the servant
+			// Store the reference from the Proxy
+			
 			org.omg.CORBA.Object ref = rootpoa.servant_to_reference(serv);
 			Proxy href = ProxyHelper.narrow(ref);
 
-			// get the root naming context
+			// Initialize references
+			
 			org.omg.CORBA.Object objRef = orb.resolve_initial_references("NameService");
-			// Use NamingContextExt which is part of the Interoperable
-			// Naming Service (INS) specification.
 			NamingContextExt ncRef = NamingContextExtHelper.narrow(objRef);
 
-			// bind the Object Reference in Naming
+			// Bind the Proxy reference
+			
 			String name = "Proxy";
 			NameComponent path[] = ncRef.to_name(name);
 			ncRef.rebind(path, href);
 
-			// wait for invocations from clients
+			// Standby for interaction with clients
+			
 			orb.run();
 		}
 
