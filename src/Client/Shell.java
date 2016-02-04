@@ -1,5 +1,6 @@
 package Client;
 
+import java.util.ArrayList;
 import java.util.Scanner;
 
 import NFS.*;
@@ -47,12 +48,11 @@ public class Shell {
 					case "ps": System.out.println(start + proxy.ps() + end); break;
 					case "mkdir": System.out.println(start + proxy.mkdir("lymap") + end); break;
 					case "cd": changeDirectory(proxy); break;
+					case "menu": printMenu(); break;
 					default: System.out.println("Error: Bad command"); break;
 					
 				}
-		
 			} 
-			
 		}
 		
 		/** Change the current directory to another existing directory. 
@@ -66,11 +66,85 @@ public class Shell {
 			System.out.println("| Fetching possible directories from the server |");
 			
 		    String results = p.lsd();
+		    
+		    ArrayList<String> directories = new ArrayList<String>();
+		    ArrayList<String> lines = new ArrayList<String>();
+		    
+		   char[] charArray = results.toCharArray();
 		   
-		    System.out.println(results);
+		   String temp = "";
+		   Boolean hit = false;
+		   int index = 0;
+		   
+		   for (index = 0; index < charArray.length; index++) {
+			   
+			   if(charArray[index] == 'd' && charArray[index+1] == 'r') {
+				   hit = true;
+			   } else {
+				   
+				   if(hit == true) {
+					   
+					   if(charArray[index] != '\n') {
+						   temp += charArray[index];
+					   } else {						   
+						
+						   // I am assuming that you have read rights on the first bit of the secrity descriptor
+						   
+						if(temp.charAt(0) == 'r')
+							   lines.add(temp); 
+						   
+						   hit = false;
+						   temp = "";
+						   
+					   }
+				   }
+			   }
+			   
+		   }
+		   
+		   // Fix lymap error!!
+		   
+		 String tempest = "";
+		  
+		  for (String s: lines) {
+			  
+			  int lastChar = s.length() - 1;
+			  
+			  while(!Character.isWhitespace(s.charAt(lastChar))) {
+				  tempest += s.charAt(lastChar);
+				  lastChar--;
+			  }
 			
+			 String reversed = new StringBuilder(tempest).reverse().toString();
+			 directories.add(reversed);
+			 tempest = "";
+		  }
+		  
+		  System.out.println("|Please choose one of the following folders|\n\n");
+		  
+		  
+		  System.out.println("-------------------------------------------");
+		  for(String s: directories) {
+			  System.out.println(s);
+		  }
+		  System.out.println("-------------------------------------------");
+		
+		  Scanner input = new Scanner(System.in);  
+		  String chosenFolder = input.nextLine();
+		  
+		  if(directories.contains(chosenFolder)) {
+			  System.out.println("Commencing directory change...");
+			  p.cd(chosenFolder);
+			  
+		  } else {
+			  System.out.println("The specified folder does not exist.");
+		  }
+		  
 		}
+		
 
+		
+		
 		/** Prints a menu containing a list of legal commands.
 		 * 
 		 */
@@ -79,7 +153,9 @@ public class Shell {
 			
 			System.out.println("|Commands         |        Synopsis             |");
 			System.out.println("|-----------------|-----------------------------|");
-			System.out.println("|ls               | show files                  |");
+			System.out.println("|menu             | display menu                |");
+			System.out.println("|-----------------|-----------------------------|");
+			System.out.println("|ls               | display files               |");
 			System.out.println("|-----------------|-----------------------------|");
 			System.out.println("|pwd              | display directory path      |");
 			System.out.println("|-----------------|-----------------------------|");

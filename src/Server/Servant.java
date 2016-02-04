@@ -30,7 +30,9 @@ public class Servant extends ProxyPOA {
 	@Override
 	public String cd(String directory) {
 		System.out.println("Command cd has been invoked.");
-		return executeCommand("cd" + " " + directory);
+		System.out.println("Directory: [" + directory + "]");
+		executeCommand("cd" + " " + directory);
+		return "lol";
 	}
 	
 	@Override
@@ -41,7 +43,7 @@ public class Servant extends ProxyPOA {
 	
 	@Override
 	public String lsd() {
-		System.out.println("Command ls -d has been invoked.");
+		System.out.println("Command ls -l has been invoked.");
 		return executeCommand("ls -l");
 	}
 	
@@ -110,7 +112,7 @@ public class Servant extends ProxyPOA {
         	*/
         	
             if(runs > 0) {
-            	results = results + "\n" + s;
+            	results = results + s + "\n";
             } else {
             	results  = s;
             }
