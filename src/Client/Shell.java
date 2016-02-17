@@ -12,10 +12,11 @@ import NFS.*;
  */
 public class Shell {
 	
+	
 	Scanner shellScanner;
 	String start = "------------------------------------------------\n";
 	String end = "\n------------------------------------------------\n";
-
+	
 		Shell (Proxy proxy) {
 			
 			printMenu();
@@ -102,7 +103,13 @@ public class Shell {
 			   
 		   }
 		   
-		   // Fix lymap error!!
+		   /* 
+		     
+		     Please note that in order to successfully change the directory, you have to spawn
+		   a custom, new process within the shell. It is not possible to change the directory of 
+		   the main process which is operating the actual program, as that would be malignant.
+		   
+		   */
 		   
 		 String tempest = "";
 		  
@@ -134,16 +141,22 @@ public class Shell {
 		  
 		  if(directories.contains(chosenFolder)) {
 			  System.out.println("Commencing directory change...");
-			  p.cd(chosenFolder);
+			  
+			  // You need to customize the "cd" command so that it spawn a new process for the shell to operate within
+			  
+			  String response = p.cd(chosenFolder);
+			  
+			  if(response.equals("SUCCESS")) {
+				  System.out.println("Succeeded in changing directory.");
+			  } else if(response.equals("FAILURE")) {
+				  System.out.println("Failed to change directory.");
+			  }
 			  
 		  } else {
 			  System.out.println("The specified folder does not exist.");
 		  }
 		  
 		}
-		
-
-		
 		
 		/** Prints a menu containing a list of legal commands.
 		 * 
@@ -170,6 +183,4 @@ public class Shell {
 			
 			System.out.println();
 		}
-		
-		
 }

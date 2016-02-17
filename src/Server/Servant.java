@@ -3,7 +3,14 @@ package Server;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.lang.ProcessBuilder.Redirect;
+import java.util.ArrayList;
+
+import javax.swing.LayoutStyle;
 
 import DataStructure.HistoryBook;
 import NFS.*;
@@ -15,10 +22,17 @@ import NFS.*;
  */
 public class Servant extends ProxyPOA {
 	
+	// This is a datastructure that contains all commands that have been executed
+	
 	HistoryBook hb;
+	
+	
+	int amountCalls = 0;
+	String outputLog = "";
 
 	public Servant() {
 		hb = new HistoryBook();
+        
 	}
 
 	@Override
@@ -27,12 +41,14 @@ public class Servant extends ProxyPOA {
 		return executeCommand("pwd");
 	}
 
+	/* 	Here you have to make sure that the correct information wrt. choice of folders
+		are being specified to the client, 
+		so that one cannot change into something that doesn't exist	 */
+	
 	@Override
 	public String cd(String directory) {
-		System.out.println("Command cd has been invoked.");
-		System.out.println("Directory: [" + directory + "]");
-		executeCommand("cd" + " " + directory);
-		return "lol";
+		String cmd = "cd " + directory;
+		return executeCommand(cmd);
 	}
 	
 	@Override
@@ -80,9 +96,24 @@ public class Servant extends ProxyPOA {
 	 */
 	public String executeCommand(String cmd) {
 		
+		if(amountCalls > 0) {
+			outputLog += " " + cmd + " ; ";
+			} else {
+				outputLog = cmd + " ; ";
+			}
+		
+		/* I am utilizing ProcessBuilder to run consequetive system calls stacked together. 
+		 * This way i can simulate an actual standalone process. I am using my HistoryBook
+		 * datastructure to store commands, which will be written to disc as a means to
+		 * restore the system state upon a spawn of a new session. */
+		
+		ProcessBuilder pb = new ProcessBuilder("bash", "-c", outputLog);
+		
+		// Be careful here. All commands will be stacked together. You only want the last command to be run
+		
 		int runs = 0;
-		String s = null;
-		String results = null;
+		String s = "";
+		String results = "";
 		
 		try {
 		
@@ -90,8 +121,10 @@ public class Servant extends ProxyPOA {
 			
 		hb.addToHistory(cmd);
 		
-		Process p = Runtime.getRuntime().exec(cmd);
-        
+		Process p = pb.start();		
+		
+		amountCalls++;
+		
         BufferedReader stdInput = new BufferedReader(new
              InputStreamReader(p.getInputStream()));
 
@@ -102,6 +135,8 @@ public class Servant extends ProxyPOA {
    
         while ((s = stdInput.readLine()) != null) {
             
+        	System.out.println("Line: [" + s + "]");
+        	
         	/* If the loop has only been run once, there is no need for
         	 * concatination, as it is a indication of there being only
         	 * one line of output. If loop has been run > one iterations
@@ -114,16 +149,49 @@ public class Servant extends ProxyPOA {
             if(runs > 0) {
             	results = results + s + "\n";
             } else {
-            	results  = s;
+            	results  = s + "\n";
             }
             runs++;
+            
         }
+        
+        String[] resultsArray = results.split("\n");
+        int amountLines = resultsArray.length;
+        
+        
+        switch(cmd) {
+        
+    		case "pwd": 
+    			System.out.println("Amount lines for pwd: " + amountLines);
+    			return resultsArray[amountLines - 1];
+    		
+    		case "ls": 
+    			System.out.println("Amount lines for ls: " + amountLines);
+    			int maxLines = 7;
+    			int index = (resultsArray.length) - (maxLines);
+    			String finalString = "";
+    			
+    			while(maxLines > 0) {
+    				finalString += resultsArray[index++] + "\n";
+    				maxLines--;
+    			}
+    			
+    			return finalString;
+    		}
+        
+       
          
         // Read any errors from the attempted command
         
         while ((s = stdError.readLine()) != null) {
-            System.out.println(s);
+            System.out.println("Error: " + s);
+            return "FAILURE";
         }
+        
+        if(cmd.startsWith("cd ")) {
+        	return "SUCCESS";
+        }
+        		
 		}
         
 		// Handle errors
@@ -137,6 +205,8 @@ public class Servant extends ProxyPOA {
         }
 		
 		// Return the concatinated String
+		
+		System.out.println(results);
 		
 		return results;
 	}
